@@ -7,6 +7,8 @@
 # CalamusInjector v0.1-RLS
 # ==============================================================================
 
+# REFER TO THE INSTALLATION GUIDE ON THE README.MD INSTEAD IF YOU ARE WILLING TO INSTALL THIS!
+
 # Start.
 
 class ToolGiver_Menu < Window_Command
