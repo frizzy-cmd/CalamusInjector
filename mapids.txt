@@ -1,4 +1,21 @@
-Map IDs for OneShot. Extracted by Kip. Untested!
+Map IDs for OneShot. Extracted by Kip. Partially tested!
+
+Tested:
+Map ID 1 (INIT) seems to be like the payload when you load the game after a bit, like for example Niko asks you like where you've been and stuff. I think the game selects a permanent one for the current ongoing session, since i tried doing that map id multiple times and the payload stayed the same, For me, it was
+
+Niko: ...
+Plr: I'm back
+Niko: I don't think anyone else is noticing it, either...
+Niko: Am I the only one who's seeing this?
+
+Map ID 2 seems to be the starting place where Niko wakes up first in.
+Map ID 3 is the bathroom of the starting place.
+Map ID 4 is the living room of the starting place.
+Map ID 5 is the basement stairs of the starting place.
+Map ID 6 is like another place for when you get the lightbulb?
+Map ID 7 is ... i dont know either. like how The Glen has like those weird holes in the ground, that typa pattern. Eliza just makin shit bro
+
+More IDs to be tested soon!
 
 Map ID: 1 | Name: INIT
 Map ID: 2 | Name: Start
