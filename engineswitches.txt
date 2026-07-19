@@ -1,0 +1,29 @@
+Switches for the mod menu.
+
+(Mapped from index 151 to 175)
+--------------------------------------------------------------------------------
+151: START Flag (Keep false / Unchecked)
+152: s_beated        -> Flags that a standard ending was achieved
+153: s_smashed       -> Flags that the sun was destroyed ending
+154: s_saved         -> Flags that the sun was placed ending
+155: s_talkedtorue   -> Niko met Rue
+156: s_knowruename   -> Niko explicitly knows Rue's name
+157: s_pickedmemory  -> I forgot what this does but im pretty sure that it means that you picked The World Machine at the main menu
+158: Blank/Reserved  (Keep false)
+159: Blank/Reserved  (Keep false)
+160: s_beatsolstice  -> Beat solstice once
+161-173: Blank/Res   (Keep false)
+174: s_disablemenu   -> Locks the player out of accessing menus
+175: END Flag        (Keep false)
+
+[Game var array] (Mapped from Index 76 to 100)
+--------------------------------------------------------------------------------
+76: START Index     -> Base var (0)
+77: val_cleared     -> Times game won (i think)
+78: val_rue         -> Times talked to Rue
+79-97: Blank/Res.   -> Hard-coded to 00 hex string filling.
+98: s_blockmove     -> Freezes movement of the player
+99: s_blocksave     -> Blocks the engine's saving functionality
+100: s_metalock     -> Kills the engine (overreaction but still unplayable)
+
+For easier usability with graphic user interface, try visiting Alula Editor! [https://kip.teaa.workers.dev/p-settings-generate]
