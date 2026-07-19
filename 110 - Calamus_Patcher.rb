@@ -441,8 +441,10 @@ class Debug_Coord_Display
     @idr_text.y = 480 - 32 - 10
     @idr_text.bitmap.font.size = 16
     @idr_text.bitmap.font.bold = false
-    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusPatcher v0.1-RLS | Diagnostics")
+    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.1-RLS | Diagnostics")
   end
+
+  # was og CalamusPatcher
 
   def update
     return if @text.disposed?
