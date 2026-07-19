@@ -98,7 +98,7 @@ class Scene_Map
 
     # Coord TP
     if $pending_tp_choice && !$game_temp.message_window_showing
-      choice = $game_roariables[98]
+      choice = $game_variables[98]
       $pending_tp_choice = false
       if choice == 1
         $game_temp.num_input_variable_id = 97
