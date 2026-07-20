@@ -38,6 +38,9 @@ Tags [for better reachability]: OneShot, OneShot mod menu, OneShot debug, OneSho
 - If you are using Linux or Mac, please Google what it is for you, or search it yourself.
 - Move your unmodified `xScripts.rxdata` file out the `Data` folder.
 - Drop the CalamusInjector version of the `xScripts.rxdata` file into the `Data` folder.
+- Also make sure that your keybinds are set to this! Optional, but please make sure the R keybind is set to R.
+- <img width="703" height="538" alt="image" src="https://github.com/user-attachments/assets/35d486a6-21a3-41e7-970a-289d332f0c35" />
+
 
 ## How to use CalamusInjector?
 - Press `R` in-game to toggle the mod menu UI.
