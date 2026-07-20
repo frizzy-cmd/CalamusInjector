@@ -30,7 +30,7 @@ Tags [for better reachability]: OneShot, OneShot mod menu, OneShot debug, OneSho
 ## Installation:
 - **Make sure to backup your original `xScripts.rxdata` file and the `save.dat` file wherever OneShot stores your save files!**
 - Go to the `Releases` section, and download `xScripts.rxdata`.
-- Navigate to your OneShot game directory, which on windows is normally at
+- Navigate to your OneShot game directory, which on Windows is normally at
 - ```
   C:\Program Files (x86)\Steam\steamapps\common\OneShot\Data
   ```
@@ -51,3 +51,18 @@ Diagnostics UI
 
 Item ID UI
 <img width="639" height="507" alt="image" src="https://github.com/user-attachments/assets/9caf01d1-be7c-46e7-b5f3-aabe69471f38" />
+
+---
+
+# ⚠ General problems
+Problem: OneShot immediately crashes with a error, or pressing R doesn't open the menu.
+- Make sure you have replaced your unmodified xScripts.rxdata with the CalamusInjector xScripts.rxdata version, Or, if in some cases, OneShot pushed an update (not to my knowledge) that broke the injector. As of now, 20/07/2026, all functionality of CalamusInjector is working fine.
+- And, to end your game if the game crashed, (since you can't close normally thru the X button during crashes), you will have to open Task Manager manually, and end the process there.
+
+Problem: I used the Map ID jumper/walk anywhere/item id injector and i'm suddenly stuck out of bounds/a flag breaks/the game fails to save.
+- OneShot is a heavily state-driven game that uses specific switches and variables to keep track of the current storyline. Forcing a map ID jump or giving yourself a item withour actually triggering the proper preceding events may confuse the engine.
+
+Problem: Windows Defender/my antivirus flags the injector (.rxdata) as a virus
+- This shouldn't happen, since it's not happening for me on Windows Defender, (W10 LTSC), Add the .rxdata as a exclusion to the antivirus. I assure you it's safe, literally open source. If you don't trust me, you can extract the .rxdata and find out, or look at `.rb` file i uploaded.
+
+**If a problem you are having is not listed here, please contact me, or try to fix it yourself.**
