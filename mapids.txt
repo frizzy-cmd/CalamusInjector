@@ -21,6 +21,8 @@ Map ID 11 is self-explanatory. Debug map.
 Map ID 12 is in The Barrens near the Entrance.
 Map ID 13 is in The Barrens in the terminal room.
 
+DO NOT TP TO MAP ID 96! WILL SOFT LOCK YOUR GAME!!
+
 More IDs to be tested soon!
 
 Map ID: 1 | Name: INIT
