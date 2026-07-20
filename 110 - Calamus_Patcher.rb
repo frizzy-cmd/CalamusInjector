@@ -6,7 +6,7 @@
 # 1. Press R to open ModMenu.
 # 2. Use current ACTION keybind to select
 # 
-# - CalamusInjector v0.2-RC
+# - CalamusInjector v0.3-RC
 # - Licensed under the GNU GPL v3 license.
 # - Last updated this section: 20/07/2026 11:57 AM UTC+8
 # 
@@ -38,12 +38,155 @@
 # Variable 99: Stores the Item ID input by the plr for Custom item ID injector.
 # 
 # (Used as temporary input buffers, will overwrite existing data in these slots)
-# 
+#
+#
+# - Thank you for using CalamusInjector. 
 # ==============================================================================
 
 # START!
 
+# note to self:
+# 068, 067 .rb is built-in debug ux for oneshot but we use our diagnostics for detail.
+# FILES, 061, 062, 063, 060 HANDLE DIALOGUE BOXES
+# 061 = Window name input
+# 062 Window input number
+# 063 Window msg (default dialogue box, pretty sure)
+# 060 Window name Edit
+# #{pc_user} [computer username], defined line 626
+
 # TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+
+# Moved the coord input to a class :)
+class Window_CalamusCoordInput < Window_Base
+  attr_reader :confirmed
+  attr_reader :cancelled
+  attr_reader :retp_triggered
+
+  def initialize
+    super(120, 140, 400, 200)
+    self.contents = Bitmap.new(width - 32, height - 32)
+    self.z = 100001
+    self.opacity = 0
+    self.contents_opacity = 0
+    
+    @grid = [
+      ["7", "8", "9", "RE-TP"],
+      ["4", "5", "6", "-"],
+      ["1", "2", "3", ","],
+      ["0", "BACK", "OK", "EXIT"]
+    ]
+    @index_x = 0
+    @index_y = 0
+    @entered_text = ""
+    @fade_in = true
+    @fade_out = false
+    @confirmed = false
+    @cancelled = false
+    @retp_triggered = false
+    
+    refresh
+  end
+
+  def refresh
+    self.contents.clear
+    self.contents.font.color = system_color
+    self.contents.draw_text(0, 0, width - 32, 32, "Enter coords (X,Y): #{@entered_text}")
+    
+    self.contents.font.color = normal_color
+    4.times do |y|
+      4.times do |x|
+        item = @grid[y][x]
+        dx = x * 90
+        dy = 40 + (y * 30)
+        self.contents.draw_text(dx, dy, 80, 32, item, 1)
+      end
+    end
+  end
+
+  def update_cursor_rect
+    dx = @index_x * 90
+    dy = 40 + (@index_y * 30)
+    self.cursor_rect.set(dx, dy, 80, 30)
+  end
+
+  def update
+    super
+    
+    if @fade_in
+      self.opacity += 48
+      self.contents_opacity += 48
+      @fade_in = false if self.contents_opacity == 255
+      return
+    end
+
+    if @fade_out
+      self.opacity -= 48
+      self.contents_opacity -= 48
+      if self.opacity == 0
+        self.dispose
+      end
+      return
+    end
+
+    update_cursor_rect
+    
+    if Input.repeat?(Input::RIGHT)
+      $game_system.se_play($data_system.cursor_se)
+      @index_x = (@index_x + 1) % 4
+    elsif Input.repeat?(Input::LEFT)
+      $game_system.se_play($data_system.cursor_se)
+      @index_x = (@index_x + 3) % 4
+    elsif Input.repeat?(Input::DOWN)
+      $game_system.se_play($data_system.cursor_se)
+      @index_y = (@index_y + 1) % 4
+    elsif Input.repeat?(Input::UP)
+      $game_system.se_play($data_system.cursor_se)
+      @index_y = (@index_y + 3) % 4
+    end
+
+    if Input.trigger?(Input::ACTION)
+      action_item = @grid[@index_y][@index_x]
+      case action_item
+      when "OK"
+        $game_system.se_play($data_system.decision_se)
+        @confirmed = true
+        @fade_out = true
+      when "EXIT"
+        $game_system.se_play($data_system.cancel_se)
+        @cancelled = true
+        @fade_out = true
+      when "RE-TP"
+        $game_system.se_play($data_system.decision_se)
+        @retp_triggered = true
+        @fade_out = true
+      when "BACK"
+        $game_system.se_play($data_system.cancel_se)
+        @entered_text.chop!
+        refresh
+      else
+        $game_system.se_play($data_system.decision_se)
+        if @entered_text.length < 12
+          @entered_text += action_item
+          refresh
+        end
+      end
+    elsif Input.trigger?(Input::CANCEL)
+      $game_system.se_play($data_system.cancel_se)
+      @cancelled = true
+      @fade_out = true
+    end
+  end
+  
+  def parsed_coordinates
+    parts = @entered_text.split(',')
+    return nil if parts.size != 2
+    x = parts[0].to_i
+    y = parts[1].to_i
+    return [x, y]
+  rescue
+    return nil
+  end
+end
 
 class ToolGiver_Menu < Window_Selectable
   attr_reader :commands
@@ -51,7 +194,7 @@ class ToolGiver_Menu < Window_Selectable
   def initialize
     @commands = [
       "Custom Item ID...",
-      "--- Mods ---",
+      "--- Mods ---", # will remove ts useless thing next upd. | next upd, still lazy to remove..
       "Coord TP",
       "Map ID Jump",
       "Refresh Map",
@@ -59,7 +202,7 @@ class ToolGiver_Menu < Window_Selectable
       "Force Save", 
       "Walk Anywhere",
       "Game Speed FPS",
-      "Toggle Diagnostics",
+      "Diagnostics",
       "Delete Item ID",
       "Mute BGM",
       "BGM Jukebox...",
@@ -75,9 +218,9 @@ class ToolGiver_Menu < Window_Selectable
     elsif plat =~ /darwin/
       os_str = "Mac"
     else
-      os_str = "wtfisyouros" # unknown OS
+      os_str = "IDontKnowWhatOS" # unknown OS
     end
-    @header_text = "CalamusInjector v0.2-RC [#{os_str}]"
+    @header_text = "CalamusInjector v0.3-RC [#{os_str}]"
     # if upd version, make sure to go to @idr_text.bitmap.draw_text aswell to upd text for diagnostics !!
     
     # in motherland russia, we dont use ui, we build ui
@@ -187,23 +330,22 @@ class Scene_Map
         when 0 # custom item id giver
           $game_temp.num_input_variable_id = 99
           $game_temp.num_input_digits_max = 2
-          $game_temp.message_text = "Enter Item ID please! (01-82)"
+          $game_temp.message_text = "Enter preferred Item ID please! (01-82)"
           $game_temp.message_window_showing = true
           $pending_item_id = true
           @tool_menu.dispose
           @tool_menu = nil
-        when 2 # tp coord
-          $game_temp.num_input_variable_id = 98
-          $game_temp.num_input_digits_max = 2
-          $game_temp.message_text = "Pick an option:\n01: Teleport\n02: Teleport to last coordinate"
+        when 2 # tp coord reminde rmsg
+          $game_temp.message_face = "calamus_speak"
+          $game_temp.message_text = "Hey, Just remember to use syntax like: -15,30 or 5,12 to teleport properly. Good luck!"
           $game_temp.message_window_showing = true
-          $pending_tp_choice = true
+          $pending_custom_grid_open = true
           @tool_menu.dispose
           @tool_menu = nil
         when 3 # map id jump
           $game_temp.num_input_variable_id = 96
           $game_temp.num_input_digits_max = 3
-          $game_temp.message_text = "Enter Map ID to teleport to (001-999):"
+          $game_temp.message_text = "Enter Map ID to teleport to (001-263):"
           $game_temp.message_window_showing = true
           $pending_map_jump = true
           @tool_menu.dispose
@@ -256,20 +398,20 @@ class Scene_Map
               $game_system.bgm_stop
               $calamus_is_muted = true
               $game_temp.message_face = "calamus_speak"
-              $game_temp.message_text = "Muted BGM successfully."
+              $game_temp.message_text = "Muted track: #{$calamus_muted_bgm.name}"
             else
               $game_temp.message_face = "calamus_sad"
-              $game_temp.message_text = "No BGM is currently playing to mute!" #rare
+              $game_temp.message_text = "No BGM is currently playing to mute!" #woah
             end
           else
             if $calamus_muted_bgm
               $game_system.bgm_play($calamus_muted_bgm)
               $calamus_is_muted = false
               $game_temp.message_face = "calamus_smile"
-              $game_temp.message_text = "Unmuted BGM. Resuming track: #{$calamus_muted_bgm.name}"
+              $game_temp.message_text = "Unmuted track! Resuming track: #{$calamus_muted_bgm.name}"
             else
               $game_temp.message_face = "calamus_sad"
-              $game_temp.message_text = "Whoops.. No cached track found to restore."
+              $game_temp.message_text = "Whoops.. No cached track found to restore." #what
               $calamus_is_muted = false
             end
           end
@@ -279,7 +421,7 @@ class Scene_Map
         when 12 # BGM Jukebox
           if $bgm_list.empty?
             $game_temp.message_face = "calamus_shock"
-            $game_temp.message_text = "No BGM files found in Audio/BGM?" # what the fuck
+            $game_temp.message_text = "No BGM files found in Audio/BGM? #{pc_user}... Check Audio/BGM.. Are there any sound files there?" #rare
           else
             $game_temp.num_input_variable_id = 88
             $game_temp.num_input_digits_max = 3
@@ -290,7 +432,7 @@ class Scene_Map
           $game_temp.message_window_showing = true
           @tool_menu.dispose
           @tool_menu = nil
-        when 13 # about
+        when 13 # about (may not work)??? idk what causes it but im lazy i dont kwanna its 12:58 am
           @tool_menu.dispose
           @tool_menu = nil
           $game_temp.message_face = "alula_speak"
@@ -301,7 +443,6 @@ class Scene_Map
       return
     end
 
-    # diagnostics used to always on
     $show_diagnostics ||= false
     if $show_diagnostics
       $debug_coords ||= Debug_Coord_Display.new
@@ -311,10 +452,9 @@ class Scene_Map
       $debug_coords = nil
     end
 
-    # legal..
     if $about_dialogue_step && $about_dialogue_step > 0 && !$game_temp.message_window_showing
       case $about_dialogue_step
-      when 1
+      when 1 #legal..
         $game_temp.message_face = "calamus_shame"
         $game_temp.message_text = "This project took me almost 10 IRL hours to make. Please consider supporting me! Thank you!"
         $about_dialogue_step = 2
@@ -336,58 +476,37 @@ class Scene_Map
         $about_dialogue_step = 6
       when 6
         $game_temp.message_face = "calamus_sad"
-        $game_temp.message_text = "Calamus Injector is built & maintained by Kip. | GitHub github.com/frizzy-cmd"
+        $game_temp.message_text = "Calamus Injector is built & maintained by Kip. | GitHub: github.com/frizzy-cmd"
         $about_dialogue_step = 0 
       end
       $game_temp.message_window_showing = true
     end
     
-    # check for cust. ITID inject
     if $pending_item_id && !$game_temp.message_window_showing
       id = $game_variables[99]
       if $data_items[id] != nil
         $game_party.gain_item(id, 1)
       else
         $game_temp.message_face = "calamus_heh"
-        $game_temp.message_text = "Err.. Invalid item ID or I couldn't find the ID.. Try looking on the GitHub repository for all the item IDs!"
+        $game_temp.message_text = "Eheh.. Invalid item ID or I couldn't find the ID.. Try looking on the GitHub repository for all the item IDs!"
         $game_temp.message_window_showing = true
       end
       $pending_item_id = false
     end
 
-    # Coord TP
-    if $pending_tp_choice && !$game_temp.message_window_showing
-      choice = $game_variables[98]
-      $pending_tp_choice = false
-      if choice == 1
-        $game_temp.num_input_variable_id = 97
-        $game_temp.num_input_digits_max = 7
-        $game_temp.message_text = "Enter coordinates string:\n(Format: [SignX][X][X][SignY][Y][Y][Y] -> e.g., 10150015 for -15, 15)"
-        $game_temp.message_window_showing = true
-        $pending_tp_coords = true
-      elsif choice == 2
-        teleport_to_backup
-      else
-        $game_temp.message_face = "calamus_sad"
-        $game_temp.message_text = "Bad option returned from user. Enter 01 to Teleport or 02 to return."
-        $game_temp.message_window_showing = true
-      end
+    # open cust. coord ui after dialogue reminder is acknowledge
+    if $pending_custom_grid_open && !$game_temp.message_window_showing
+      $pending_custom_grid_open = false
+      @coord_window = Window_CalamusCoordInput.new
     end
 
-    if $pending_tp_coords && !$game_temp.message_window_showing
-      coord_string = $game_variables[97]
-      $pending_tp_coords = false
-      execute_string_teleport(coord_string)
-    end
-
-    # handle the map ID tp
     if $pending_map_jump && !$game_temp.message_window_showing
       target_map = $game_variables[96]
       $pending_map_jump = false
 
       if target_map >= 264 || target_map <= 0
         $game_temp.message_face = "calamus_sad"
-        $game_temp.message_text = "Sorry! Map ID #{target_map} does not exist. Aborted."
+        $game_temp.message_text = "Hmm, I couldn't find Map ID #{target_map}. Does it exist?"
         $game_temp.message_window_showing = true
         $game_variables[96] = $game_map.map_id
       else
@@ -395,14 +514,13 @@ class Scene_Map
       end
     end
 
-    # handle dev-switch
     if $pending_state_target && !$game_temp.message_window_showing
       $target_state_id = $game_variables[95]
       $pending_state_target = false
       
       $game_temp.num_input_variable_id = 94
       $game_temp.num_input_digits_max = 2
-      $game_temp.message_text = "Target ID: #{$target_state_id}\nPick type:\n01: Toggle switch (ON/OFF)\n02: Set variable value"
+      $game_temp.message_text = "Target ID: #{$target_state_id}\nPick type:\n01: Toggle switch (TRUE/FALSE)\n02: Set variable value"
       $game_temp.message_window_showing = true
       $pending_state_type = true
     end
@@ -431,7 +549,6 @@ class Scene_Map
       end
     end
 
-    # dev flip variable handler
     if $pending_variable_val && !$game_temp.message_window_showing
       val = $game_variables[93]
       $pending_variable_val = false
@@ -442,7 +559,6 @@ class Scene_Map
       $game_temp.message_window_showing = true
     end
 
-    # Handle engine fps
     if $pending_fps_val && !$game_temp.message_window_showing
       fps_target = $game_variables[92]
       $pending_fps_val = false
@@ -454,7 +570,6 @@ class Scene_Map
       $game_temp.message_window_showing = true
     end
 
-    # Handle inv deletion thru ITID
     if $pending_del_item && !$game_temp.message_window_showing
       del_id = $game_variables[89]
       $pending_del_item = false
@@ -462,16 +577,15 @@ class Scene_Map
       if $game_party.weapon_number(del_id) > 0 || $game_party.armor_number(del_id) > 0 || $game_party.item_number(del_id) > 0 || $data_items[del_id] != nil
         $game_party.lose_item(del_id, 99)
         $game_temp.message_face = "calamus_smile"
-        $game_temp.message_text = "Item ID #{del_id} cleared from inventory successfully."
+        $game_temp.message_text = "Item ID #{del_id} has been removed from your inventory."
         $game_temp.message_window_showing = true
       else
         $game_temp.message_face = "calamus_speak"
-        $game_temp.message_text = "Wait a second, it's not even in your inventory! Or, you listed a wrong Item ID."
+        $game_temp.message_text = "Hmm, I couldn't find that Item ID in your inventory, or does it exist?"
         $game_temp.message_window_showing = true
       end
     end
 
-    # handle BGM jukebox selection
     if $pending_bgm_play && !$game_temp.message_window_showing
       track_idx = $game_variables[88]
       $pending_bgm_play = false
@@ -480,8 +594,7 @@ class Scene_Map
         chosen_track = $bgm_list[track_idx]
         $game_system.bgm_play(RPG::AudioFile.new(chosen_track, 100, 100))
         $game_temp.message_face = "calamus_smile"
-        $game_temp.message_text = "Now playing track #{track_idx}: #{chosen_track}."
-
+        $game_temp.message_text = "Now playing track #{track_idx}: #{chosen_track} !"
         $calamus_is_muted = false
         $calamus_muted_bgm = nil 
       else
@@ -491,10 +604,37 @@ class Scene_Map
       $game_temp.message_window_showing = true
     end
     
-    # open sesame!
-    if Input.trigger?(Input::R) && @tool_menu.nil?
+    if Input.trigger?(Input::R) && @tool_menu.nil? && @coord_window.nil?
       $game_system.se_play($data_system.decision_se)
       @tool_menu = ToolGiver_Menu.new
+    end
+
+    # custom overlay
+    if @coord_window
+      @coord_window.update
+      if @coord_window.disposed?
+        if @coord_window.confirmed
+          coords = @coord_window.parsed_coordinates
+          if coords
+            $last_teleport_x = $game_player.x
+            $last_teleport_y = $game_player.y
+            $game_player.moveto(coords[0], coords[1])
+            
+            $game_temp.message_face = "calamus_smile"
+            $game_temp.message_text = "Teleported to X: #{coords[0]}, Y: #{coords[1]}!\nSaved last coordinates."
+          else
+            pc_user = ENV['USER'] || ENV['USERNAME'] || "User" # if fail, then fallback to User. USER is for UNIX. USERNAME is for Windows
+            $game_temp.message_face = "calamus_sad"
+            $game_temp.message_text = "Err.. Format parse error! #{pc_user}, please remember to use syntax like: -15,30 or 5,12 .. Thanks!"
+          end
+          $game_temp.message_window_showing = true
+        elsif @coord_window.retp_triggered
+          # Custom back-teleport route execution
+          teleport_to_backup
+        end
+        @coord_window = nil
+      end
+      return
     end
     
     orig_update
@@ -545,7 +685,7 @@ def execute_string_teleport(val)
   $game_player.moveto(target_x, target_y)
   
   $game_temp.message_face = "calamus_smile"
-  $game_temp.message_text = "Teleported to X: #{target_x}, Y: #{target_y}!\nSaved return point to: #{$last_teleport_x}, #{$last_teleport_y}"
+  $game_temp.message_text = "Teleported to X: #{target_x}, Y: #{target_y}!\nSaved last coord as: #{$last_teleport_x}, #{$last_teleport_y}"
   $game_temp.message_window_showing = true
 end
 
@@ -557,10 +697,10 @@ def teleport_to_backup
     $last_teleport_x = old_x
     $last_teleport_y = old_y
     $game_temp.message_face = "calamus_smile2"
-    $game_temp.message_text = "TPed back to last coordinate point successfully!"
+    $game_temp.message_text = "Teleported back to last coordinate point successfully!"
   else
     $game_temp.message_face = "calamus_heh"
-    $game_temp.message_text = "No backup coord found! Teleport somewhere using action 01."
+    $game_temp.message_text = "No backup coord found! Teleport somewhere first."
   end
   $game_temp.message_window_showing = true
 end
@@ -621,11 +761,11 @@ def force_save
   Marshal.dump($game_party, file)
   Marshal.dump($game_troop, file)
   Marshal.dump($game_map, file)
-  Marshal.dump($game_player, file)
+  Marshal.dump($game_player, file) # Yeah my code is fucking messy shut up lol,  if you evr need a motivational quote, "Never code like Kip"
   file.close
   
   $game_temp.message_face = "calamus_smile2"
-  $game_temp.message_text = "Successfully force-saved game to %appdata%/OneShot/save.dat!"
+  $game_temp.message_text = "Successfully force-saved game to %appdata%/OneShot/save.dat! [or your local OneShot save file directory. not only exclusive for W10]"
   $game_temp.message_window_showing = true
 end
 
@@ -636,7 +776,7 @@ def toggle_noclip
 
   status = $game_player.through ? "enabled" : "disabled"
   $game_temp.message_face = "calamus_speak"
-  $game_temp.message_text = "Wait, Niko, You can walk anywhere? [#{status}]"
+  $game_temp.message_text = "Wait a second, Niko, since when could you walk anywhere? [#{status}]"
   $game_temp.message_window_showing = true
 end
 
@@ -657,7 +797,7 @@ class Debug_Coord_Display
     @idr_text.y = 480 - 32 - 10
     @idr_text.bitmap.font.size = 16
     @idr_text.bitmap.font.bold = false
-    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusPatcher v0.2-RC | Diagnostics")
+    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.3-RC | Diagnostics")
   end
 
   def update
@@ -679,8 +819,9 @@ class Debug_Coord_Display
       "Plr sprite: #{plr_sprite}",
       "Dialogue face: #{active_face}",
       "Engine FPS: #{Graphics.frame_rate} FPS",
-      "Current bgm: #{current_bgm}",
-      "Save count: #{$game_system.save_count}"
+      "Current BGM: #{current_bgm}",
+      "Save count: #{$game_system.save_count}",
+      # "PC user: #{pc_user}" soon
     ]
     
     lines.each_with_index do |line, i|
@@ -714,3 +855,4 @@ rescue Exception => e
 end
 
 # probably wont work because i dont know how the fuck oneshot titles it windows i tried to find it but to no avail
+# Celebrating 857 lines of code!
