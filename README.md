@@ -21,7 +21,7 @@ Tags [for better reachability]: OneShot, OneShot mod menu, OneShot debug, OneSho
 - **Item ID remover:** Don't want something in your inventory? Shame. You can delete it using this feature in the mod menu!
 - **Map ID jump system:** You can bypass progression by force-teleporting Niko to any Map ID (001-999) instantly! Spawning at X:0 Y:0 though. Keep in mind, you may need the **Walk anywhere** feature to actually get to a walkable point on a Map ID, but so far, it's okay!
 - **Engine FPS unlocker:** This is more of a ***fun*** thing rather than useful, Normally, the engine is set to 60 FPS, like the usual, but if you set it to 9999 (which is the limit), everything goes by SUPER fast.
-- **Force-saver:** Busy, or need to sleep but you haven't saved your game properly yet by letting Niko sleep? Use the **Force-save** feature! Forcefully writes to %appdata%/Oneshot/save.dat,
+- **Force-saver:** Busy, or need to sleep but you haven't saved your game properly yet by letting Niko sleep? Use the **Force-save** feature! Forcefully writes to `%appdata%/Oneshot/save.dat` [or whereever your oneshot save file dir is at]
 - **Verbose diagnostics:** You can toggle diagnostics in the mod menu easily, It displays: Current map ID, Coordinates, Player direction, Coordinates, Player sprite, Dialogue sprite, Current bgm, Engine FPS, Save count. Also displays the version of CalamusInjector.
 - **BGM jukebox:** You can customize what background music you want! Go to `CalamusInjector/musicids.txt` for the list of the available IDs, or, go to your OneSHot game directory and find `calamus_bgm_log.txt`!
 - **Mute BGM:** Alongside BGM jukebox, if you dont like a specific BGM (for some reason), or need to mute the BGM, you can use this! It does not mute any other sounds (e.g footsteps, dialogue, etc). Only the BGM.
@@ -64,7 +64,7 @@ Problem: OneShot immediately crashes with a error, or pressing R doesn't open th
 - And, to end your game if the game crashed, (since you can't close normally thru the X button during crashes), you will have to open Task Manager manually, and end the process there.
 
 Problem: I used the Map ID jumper/walk anywhere/item id injector and i'm suddenly stuck out of bounds/a flag breaks/the game fails to save.
-- OneShot is a heavily state-driven game that uses specific switches and variables to keep track of the current storyline. Forcing a map ID jump or giving yourself a item withour actually triggering the proper preceding events may confuse the engine.
+- OneShot is a heavily state-driven game that uses specific switches and variables to keep track of the current storyline. Forcing a map ID jump or giving yourself a item withour actually triggering the proper preceding events may confuse the engine. If you try to fix it with every method to no avail, you may have to reset your save files.
 
 Problem: Windows Defender/my antivirus flags the injector (.rxdata) as a virus
 - This shouldn't happen, since it's not happening for me on Windows Defender, (W10 LTSC), Add the .rxdata as a exclusion to the antivirus. I assure you it's safe, literally open source. If you don't trust me, you can extract the .rxdata and find out, or look at `.rb` file i uploaded.
