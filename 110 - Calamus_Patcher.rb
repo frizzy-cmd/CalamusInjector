@@ -1,4 +1,4 @@
-# 110 - Calamus_Injector
+# 110 - Calamus_Injector.rb
 # Dictionary: Item ID = ITID
 # ==============================================================================
 #      ++++++++++++++++++++++++ CalamusInjector ++++++++++++++++++++++++++++++
@@ -6,7 +6,7 @@
 # 1. Press R to open ModMenu.
 # 2. Use current ACTION keybind to select
 # 
-# - CalamusInjector v0.3-RC
+# - CalamusInjector v0.4-RC
 # - Licensed under the GNU GPL v3 license.
 # - Last updated this section: 20/07/2026 11:57 AM UTC+8
 # 
@@ -52,11 +52,11 @@
 # 062 Window input number
 # 063 Window msg (default dialogue box, pretty sure)
 # 060 Window name Edit
-# #{pc_user} [computer username], defined line 626
+# #{pc_user} [computer username], defined line 626. not global
 
 # TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
 
-# Moved the coord input to a class :)
+#move to class
 class Window_CalamusCoordInput < Window_Base
   attr_reader :confirmed
   attr_reader :cancelled
@@ -115,7 +115,7 @@ class Window_CalamusCoordInput < Window_Base
     if @fade_in
       self.opacity += 48
       self.contents_opacity += 48
-      @fade_in = false if self.contents_opacity == 255
+      @fade_in = false if self.contents_opacity >= 255 # was == 255 b4
       return
     end
 
@@ -220,7 +220,7 @@ class ToolGiver_Menu < Window_Selectable
     else
       os_str = "IDontKnowWhatOS" # unknown OS
     end
-    @header_text = "CalamusInjector v0.3-RC [#{os_str}]"
+    @header_text = "CalamusInjector v0.4-RC [#{os_str}]"
     # if upd version, make sure to go to @idr_text.bitmap.draw_text aswell to upd text for diagnostics !!
     
     # in motherland russia, we dont use ui, we build ui
@@ -421,7 +421,7 @@ class Scene_Map
         when 12 # BGM Jukebox
           if $bgm_list.empty?
             $game_temp.message_face = "calamus_shock"
-            $game_temp.message_text = "No BGM files found in Audio/BGM? #{pc_user}... Check Audio/BGM.. Are there any sound files there?" #rare
+            $game_temp.message_text = "No BGM files found in Audio/BGM? Check Audio/BGM.. Are there any sound files there?" #rare
           else
             $game_temp.num_input_variable_id = 88
             $game_temp.num_input_digits_max = 3
@@ -432,11 +432,12 @@ class Scene_Map
           $game_temp.message_window_showing = true
           @tool_menu.dispose
           @tool_menu = nil
-        when 13 # about (may not work)??? idk what causes it but im lazy i dont kwanna its 12:58 am
+        when 13 # about 
           @tool_menu.dispose
           @tool_menu = nil
           $game_temp.message_face = "alula_speak"
           $game_temp.message_text = "Calamus Injector was made by the creator of Alula Editor. [Kip!] (A OneShot save file generator/editor)" 
+          # $game_temp.message_window_showing = true DEPRECATED. UNCOMMENT LINE = WILL ENABLE moved to about_dialogue_step
           $about_dialogue_step = 1
         end
       end
@@ -454,21 +455,21 @@ class Scene_Map
 
     if $about_dialogue_step && $about_dialogue_step > 0 && !$game_temp.message_window_showing
       case $about_dialogue_step
-      when 1 #legal..
-        $game_temp.message_face = "calamus_shame"
-        $game_temp.message_text = "This project took me almost 10 IRL hours to make. Please consider supporting me! Thank you!"
+      when 1 #legal n about
+        $game_temp.message_face = "alula_speak"
+        $game_temp.message_text = "Calamus Injector was made by the creator of Alula Editor. [Kip!] (A OneShot save file generator/editor)"
         $about_dialogue_step = 2
       when 2
-        $game_temp.message_face = "calamus_heh"
-        $game_temp.message_text = "I HEAVILY recommend you backup your save files before using Calamus Injector. It possibly may corrupt your save file. With great power, comes great responsibilties."
+        $game_temp.message_face = "magpie_smile"
+        $game_temp.message_text = "(and also the creator of Magpie Collector!) (A OneShot debugger) See the flow here? Alula(Editor), Calamus(Injector), Magpie(Collector):D"
         $about_dialogue_step = 3
       when 3
         $game_temp.message_face = "af"
-        $game_temp.message_text = "[Legal] OneShot, its characters, story, assets, and code are the property of Future Cat LLC."
+        $game_temp.message_text = " I HEAVILY recommend you backup your save files before using Calamus Injector. It possibly may corrupt your save file. With great power, comes great responsibilties."
         $about_dialogue_step = 4
       when 4
         $game_temp.message_face = "calamus_speak"
-        $game_temp.message_text = "[Legal] Calamus Injector is not affiliated, nor endorsed by Future Cat LLC in any way."
+        $game_temp.message_text = "[Legal] Calamus Injector is not affiliated, nor endorsed by Future Cat LLC in any way. OneShot, its characters, story, assets, and code are the property of Future Cat LLC."
         $about_dialogue_step = 5
       when 5
         $game_temp.message_face = "calamus_smile2"
@@ -743,7 +744,9 @@ end
 # handles force saving
 def force_save
   appdata_path = ENV['APPDATA']
-  save_file_path = appdata_path ? appdata_path + "/Oneshot/save.dat" : "save.dat"
+  save_file_path = appdata_path ? appdata_path + "/Oneshot/save.dat": "save.dat"
+
+  # FileUtils.mkdir_p(File.dirname(save_file_path)) no for now
 
   file = File.open(save_file_path, "wb")
   characters = []
@@ -797,7 +800,7 @@ class Debug_Coord_Display
     @idr_text.y = 480 - 32 - 10
     @idr_text.bitmap.font.size = 16
     @idr_text.bitmap.font.bold = false
-    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.3-RC | Diagnostics")
+    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.4-RC | Diagnostics")
   end
 
   def update
