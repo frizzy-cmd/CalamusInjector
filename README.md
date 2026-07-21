@@ -19,7 +19,7 @@ Tags [for better reachability]: OneShot, OneShot mod menu, OneShot debug, OneSho
 - **Item ID injector:** You can input a custom Item ID (01-82) to obtain hidden or hard to obtain items thru the mod menu!
 - **Walk anywhere:** This is the key feature that I personally love! You can clip thru ANYTHING. Allowing Niko to go thru walls, barriers, and more!
 - **Item ID remover:** Don't want something in your inventory? Shame. You can delete it using this feature in the mod menu!
-- **Map ID jump system:** You can bypass progression by force-teleporting Niko to any Map ID (001-999) instantly! Spawning at X:0 Y:0 though. Keep in mind, you may need the **Walk anywhere** feature to actually get to a walkable point on a Map ID, but so far, it's okay!
+- **Map ID jump system:** You can bypass progression by force-teleporting Niko to any Map ID (001-999) instantly! Spawning at X:15 Y:15 for every map, since i dont want to build a system where it can detect walkable area, Usually, X:15 Y:15 is the OK area for most maps to walk around!
 - **Engine FPS unlocker:** This is more of a ***fun*** thing rather than useful, Normally, the engine is set to 60 FPS, like the usual, but if you set it to 9999 (which is the limit), everything goes by SUPER fast.
 - **Force-saver:** Busy, or need to sleep but you haven't saved your game properly yet by letting Niko sleep? Use the **Force-save** feature! Forcefully writes to `%appdata%/Oneshot/save.dat` [or whereever your oneshot save file dir is at]
 - **Verbose diagnostics:** You can toggle diagnostics in the mod menu easily, It displays: Current map ID, Coordinates, Player direction, Coordinates, Player sprite, Dialogue sprite, Current bgm, Engine FPS, Save count. Also displays the version of CalamusInjector.
