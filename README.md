@@ -1,4 +1,4 @@
-# CalamusInjector
+# <img width="48" height="48" align="center" src="https://cdn.discordapp.com/emojis/1528790285771997375.webp?size=44"> CalamusInjector
 **A mod-menu/injector for OneShot with a plenty of mod menu options.**
 Tags [for better reachability]: OneShot, OneShot mod menu, OneShot debug, OneShot mod, OneShot menu, OneShot, Ruby language, ruby coding language, ruby code, rpg maker xp, RPG maker xp, 
 
