@@ -1,12 +1,11 @@
 # 110 - Calamus_Injector.rb
-# Dictionary: Item ID = ITID
 # ==============================================================================
 #      ++++++++++++++++++++++++ CalamusInjector ++++++++++++++++++++++++++++++
 #
 # 1. Press R to open ModMenu.
 # 2. Use current ACTION keybind to select
 # 
-# - CalamusInjector v0.4-RC
+# - CalamusInjector v0.5-GA
 # - Licensed under the GNU GPL v3 license.
 # - Last updated this section: 20/07/2026 11:57 AM UTC+8
 # 
@@ -18,7 +17,7 @@
 #
 #     ++++++++++++++++++++++++ READ ME ++++++++++++++++++++++++++++++
 # - PLEASE backup your unmodified xScripts.rxdata, save.dat and other save files. This mod menu MAY corrupt your save files. I am not responsible for any corrupt files!
-# - This mod menu has been tested on: Windows 10 LTSC 2021 IoT, OneShot [Steam client] | No dependencies required.
+# - This mod menu has been tested on: 64 bit Windows 10 LTSC 2021 IoT, OneShot 64 bit [Steam client] | No dependencies required.
 # - May conflict wth other scripts that heavily alias Scene_Map#update. Not guranteed it'll conflict, not guranteed it won't conflict.
 # - View the changelogs on the Releases section of the GitHub repo. github.com/frizzy-cmd/CalamusInjector
 # 
@@ -28,6 +27,7 @@
 #
 # Variable 88: Stores chosen track index number when using BGM jukebox
 # Variable 89: Holds the Item ID specified by the player when using the Delete Item ID option.
+# Variable 91: Stores the input option for diagnostics sub menu.
 # Veriable 92: Stores the target FPS input by player for Game Speed FPS.
 # Variable 93: Captures the raw numeric value the player wants to assign to a game variable with the Dev State Flip option
 # Variable 94: Holds the menu choice for the Dev State Flip type (determining whether the plr wants to toggle a switch which is 01, or variable which is 92.)
@@ -37,7 +37,7 @@
 # Variable 98: Holds the menu for Coord TP behavior (determing wtheter the plr wants to enter new coord or jump to last coord)
 # Variable 99: Stores the Item ID input by the plr for Custom item ID injector.
 # 
-# (Used as temporary input buffers, will overwrite existing data in these slots)
+# (Used as temporary input buffers, but will overwrite existing data in these slots)
 #
 #
 # - Thank you for using CalamusInjector. 
@@ -45,16 +45,78 @@
 
 # START!
 
-# note to self:
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+
+# ++== NOTES TO SELF SECTION: [DO NOT MIND IF YOU ARE NOT ME] ==++
+
 # 068, 067 .rb is built-in debug ux for oneshot but we use our diagnostics for detail.
 # FILES, 061, 062, 063, 060 HANDLE DIALOGUE BOXES
 # 061 = Window name input
 # 062 Window input number
 # 063 Window msg (default dialogue box, pretty sure)
 # 060 Window name Edit
-# #{pc_user} [computer username], defined line 626. not global
 
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+# #{pc_user} [computer username], defined line 626. not global. pls make global soon.
+
+# FOUND OUT TODAY THAT if you surround text in $game_temp.message_text("[HELLO]") it does the robot sfx
+
+# force save function may be not working.. may deprecate.. it uses backup save file isntead of save.dat, it says its corrupted apparently.
+# picky..
+# i think xScripts.rxdata (incl this script gets launched only when ingame? pressing r in main menu doesnt work. obvs.)
+
+# to see dialogues for reference/tinkering, go to C:\Users\Kip\Desktop\extracteddata\extracted_common_events
+# for ex, in 051 - prophet explains the lightbulb.json,
+# this is the lines:
+
+#     {
+#       "parameters": [
+#         "@niko Your... \\.\\.\\@niko_speak sun?" # YOU CAN LIKE MAKE PAUSES IN DIALOGUES WITH \\.\\.\\ [DEPENDS ON TEXT?]. WHAT THE FUCK. IT TOOK ME THIS LONG. FUCKING HELL MATE
+#       ],
+#       "indent": 0,
+#       "code": 101
+#     },
+#     {
+#       "parameters": [
+#         "@prophet_omg [Yes!]"
+#       ],
+#       "indent": 0,
+#       "code": 101
+#     },
+#     {
+
+# GO TO C:\Users\Kip\Desktop\calamformat.html FOR UI FORMATTER
+# OR FOR QUICK REF:
+#  \\. [15 FRAME PAUSE]
+#  \\.\. [30 FRAME PAUSE]
+#  \\| [60 FRAME PAUSE]
+# 
+# [ONLY PAUSE. DOES NOT WAIT FOR USER TO INTERACT WITH DIALOGUE THEN RESUME. IDK HOW TO IMPLEMENT. ITS 1 AM I AINT DOING ALLAT!!]
+
+# NEW DISCOVERY?
+# "@niko_eyeclosed \\p... someone lives here...\\>\\nWe can't just sleep in their bed.
+# \\p is the player's computer username?
+# \\>\\ makes a new line, waits for user interaction before continuing dialogue [possibly]
+# ed_message or anything with ed and message is the fullscreen black box message box
+# an example of this, is in NO FAST TRAVEL.json
+# "@ed [You cannot fast travel right now.]"
+# .pretty sure i know what this screen means, and to everyone else.
+
+# now, my question is, can we try it in $game_temp.message_text = "@ed [Test]" (and also w/ the pauses and shit integrated?)
+# possibly yes, but idk, the dialogues are json, this is code. so i dont know how it'll go out..
+
+# ++== END NOTES TO SELF SECTION ==++
+
 
 #move to class
 class Window_CalamusCoordInput < Window_Base
@@ -69,7 +131,7 @@ class Window_CalamusCoordInput < Window_Base
     self.opacity = 0
     self.contents_opacity = 0
     
-    @grid = [
+    @grid = [ # COORDS UI
       ["7", "8", "9", "RE-TP"],
       ["4", "5", "6", "-"],
       ["1", "2", "3", ","],
@@ -194,7 +256,7 @@ class ToolGiver_Menu < Window_Selectable
   def initialize
     @commands = [
       "Custom Item ID...",
-      "--- Mods ---", # will remove ts useless thing next upd. | next upd, still lazy to remove..
+      "--- Mods ---", # will remove ts useless thing next upd. | next upd, still lazy to remove.. | Kip, 1:18 am, 24/7/2026, 0.5-GA. i still dont have time to remove ts. if it works and does nothing thenim just gonna keep it for now
       "Coord TP",
       "Map ID Jump",
       "Refresh Map",
@@ -220,7 +282,7 @@ class ToolGiver_Menu < Window_Selectable
     else
       os_str = "IDontKnowWhatOS" # unknown OS
     end
-    @header_text = "CalamusInjector v0.4-RC [#{os_str}]"
+    @header_text = "CalamusInjector v0.5-GA [#{os_str}]"
     # if upd version, make sure to go to @idr_text.bitmap.draw_text aswell to upd text for diagnostics !!
     
     # in motherland russia, we dont use ui, we build ui
@@ -379,7 +441,19 @@ class Scene_Map
           @tool_menu.dispose
           @tool_menu = nil
         when 9 # diagnostics
-          $show_diagnostics = !$show_diagnostics
+          if $show_diagnostics
+            $show_diagnostics = false
+            if $debug_coords
+              $debug_coords.dispose
+              $debug_coords = nil
+            end
+          else
+            $game_temp.num_input_variable_id = 91 
+            $game_temp.num_input_digits_max = 2
+            $game_temp.message_text = "Select diagnostics mode:\n01: Standard diagnostics\n02: Ext. diagnostics (VISUAL)"
+            $game_temp.message_window_showing = true
+            $pending_diag_choice = true
+          end
           @tool_menu.dispose
           @tool_menu = nil
         when 10 # item id delete
@@ -455,29 +529,29 @@ class Scene_Map
 
     if $about_dialogue_step && $about_dialogue_step > 0 && !$game_temp.message_window_showing
       case $about_dialogue_step
-      when 1 #legal n about
+      when 1 # legal n about
         $game_temp.message_face = "alula_speak"
-        $game_temp.message_text = "Calamus Injector was made by the creator of Alula Editor. [Kip!] (A OneShot save file generator/editor)"
+        $game_temp.message_text = "Calamus Injector was made by the creator of Alula Editor! [Kip] \\.\\. (A OneShot save file generator/editor) [1/6]"
         $about_dialogue_step = 2
       when 2
         $game_temp.message_face = "magpie_smile"
-        $game_temp.message_text = "(and also the creator of Magpie Collector!) (A OneShot debugger) See the flow here? Alula(Editor), Calamus(Injector), Magpie(Collector):D"
+        $game_temp.message_text = "..and also the creator of Magpie Collector! (A OneShot debugger) \\| See the flow here? Alula(Editor), \\. Calamus(Injector), \\. Magpie(Collector) :D [2/6]"
         $about_dialogue_step = 3
       when 3
         $game_temp.message_face = "af"
-        $game_temp.message_text = " I HEAVILY recommend you backup your save files before using Calamus Injector. It possibly may corrupt your save file. With great power, comes great responsibilties."
+        $game_temp.message_text = "I HEAVILY recommend you backup your save files before using Calamus Injector. \\. It possibly may corrupt your save file. \\. With great power, \\. comes great responsibilties. [3/6]"
         $about_dialogue_step = 4
       when 4
         $game_temp.message_face = "calamus_speak"
-        $game_temp.message_text = "[Legal] Calamus Injector is not affiliated, nor endorsed by Future Cat LLC in any way. OneShot, its characters, story, assets, and code are the property of Future Cat LLC."
+        $game_temp.message_text = "[Legal] Calamus Injector is not affiliated, \\. nor endorsed by Future Cat LLC in any way. \\. OneShot, \\. its characters, \\. story, \\. assets, \\. and code are the property of Future Cat LLC. [4/6]"
         $about_dialogue_step = 5
       when 5
         $game_temp.message_face = "calamus_smile2"
-        $game_temp.message_text = "[Legal] This script is provided for purely education, debugging, experimenting, and modding purposes, Pushing the boundaries of OneShot with this."
+        $game_temp.message_text = "[Legal] This script is provided for purely education, debugging, experimenting, and modding purposes, \\.\\. Pushing the boundaries of OneShot! [5/6]"
         $about_dialogue_step = 6
       when 6
         $game_temp.message_face = "calamus_sad"
-        $game_temp.message_text = "Calamus Injector is built & maintained by Kip. | GitHub: github.com/frizzy-cmd"
+        $game_temp.message_text = "Calamus Injector is built & maintained by Kip. \\.\\. | GitHub: github.com/frizzy-cmd [6/6]"
         $about_dialogue_step = 0 
       end
       $game_temp.message_window_showing = true
@@ -489,10 +563,25 @@ class Scene_Map
         $game_party.gain_item(id, 1)
       else
         $game_temp.message_face = "calamus_heh"
-        $game_temp.message_text = "Eheh.. Invalid item ID or I couldn't find the ID.. Try looking on the GitHub repository for all the item IDs!"
+        $game_temp.message_text = "Eheh.. Invalid item ID or I couldn't find the ID.. \\| Try looking on the GitHub repository for all the item IDs!"
         $game_temp.message_window_showing = true
       end
       $pending_item_id = false
+    end
+
+    # handles diagnostics sub menu chocie
+    if $pending_diag_choice && !$game_temp.message_window_showing
+      diag_mode = $game_variables[91] # we read from var 91 which diag sub menu uses for input
+      $pending_diag_choice = false
+      
+      if diag_mode == 1 || diag_mode == 2
+        $show_diagnostics = true
+        $debug_coords = Debug_Coord_Display.new(diag_mode)
+      else
+        $game_temp.message_face = "calamus_sad"
+        $game_temp.message_text = "Bad option returned from user.. Select 01 or 02!"
+        $game_temp.message_window_showing = true
+      end
     end
 
     # open cust. coord ui after dialogue reminder is acknowledge
@@ -783,9 +872,10 @@ def toggle_noclip
   $game_temp.message_window_showing = true
 end
 
-# deiagnostics overlay
+# DIAGNOSTICS
 class Debug_Coord_Display
-  def initialize
+  def initialize(mode = 1)
+    @mode = mode # 1 = normal, 2 = ext 
     @viewport = Viewport.new(0, 0, 640, 480)
     @viewport.z = 99999
     
@@ -800,14 +890,78 @@ class Debug_Coord_Display
     @idr_text.y = 480 - 32 - 10
     @idr_text.bitmap.font.size = 16
     @idr_text.bitmap.font.bold = false
-    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.4-RC | Diagnostics")
+    
+    label_suffix = (@mode == 2) ? "Extended" : "Standard"
+    @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.5-GA | Diagnostics [#{label_suffix}]")
+
+    if @mode == 2
+      # tile grid overlay
+      @tile_overlay = Sprite.new(@viewport)
+      @tile_overlay.bitmap = Bitmap.new(640, 480)
+
+      # legend footer
+      @legend = Sprite.new(@viewport)
+      @legend.bitmap = Bitmap.new(220, 100)
+      @legend.x = 640 - 220 - 10
+      @legend.y = 480 - 100 - 10
+      @legend.bitmap.font.size = 13
+      @legend.bitmap.font.bold = true
+      
+      @legend.bitmap.draw_text(0, 0, 220, 16, "COLORS:")
+      @legend.bitmap.draw_text(0, 16, 220, 16, "YELLOW: PLR HITBOX")
+      @legend.bitmap.draw_text(0, 32, 220, 16, "BLUE: INTERACTABLE/NPC")
+      @legend.bitmap.draw_text(0, 48, 220, 16, "GREEN: PASSABLE")
+      @legend.bitmap.draw_text(0, 64, 220, 16, "RED: NOT PASSABLE")
+    end
   end
 
   def update
     return if @text.disposed?
     @text.bitmap.clear
-    can_dash = $game_player.respond_to?(:dash?) ? $game_player.dash? : "No"
     
+    if @mode == 2 && @tile_overlay && !@tile_overlay.disposed?
+      @tile_overlay.bitmap.clear
+      
+      #pass grid calc
+      center_x = $game_player.x
+      center_y = $game_player.y
+      
+      (-10..10).each do |dx|
+        (-8..8).each do |dy|
+          map_x = center_x + dx
+          map_y = center_y + dy
+          
+          next if map_x < 0 || map_y < 0 || map_x >= $game_map.width || map_y >= $game_map.height
+          
+          screen_x = (map_x * 32) - $game_map.display_x / 4
+          screen_y = (map_y * 32) - $game_map.display_y / 4
+          
+          next if screen_x < -32 || screen_x > 640 || screen_y < -32 || screen_y > 480
+          
+          passable = $game_map.passable?(map_x, map_y, 0)
+          color = passable ? Color.new(0, 255, 0, 45) : Color.new(255, 0, 0, 75)
+          
+          @tile_overlay.bitmap.fill_rect(screen_x, screen_y, 32, 32, color)
+        end
+      end
+
+      # active map events (cyan/blue)
+      $game_map.events.values.each do |event|
+        ev_screen_x = (event.x * 32) - $game_map.display_x / 4
+        ev_screen_y = (event.y * 32) - $game_map.display_y / 4
+        next if ev_screen_x < -32 || ev_screen_x > 640 || ev_screen_y < -32 || ev_screen_y > 480
+        
+        @tile_overlay.bitmap.fill_rect(ev_screen_x, ev_screen_y, 32, 32, Color.new(0, 180, 255, 110))
+      end
+
+      # player hitbox highlight (yellow)
+      plr_screen_x = (center_x * 32) - $game_map.display_x / 4
+      plr_screen_y = (center_y * 32) - $game_map.display_y / 4
+      @tile_overlay.bitmap.fill_rect(plr_screen_x, plr_screen_y, 32, 32, Color.new(255, 230, 0, 130))
+    end
+
+    # standard shit
+    can_dash = $game_player.respond_to?(:dash?) ? $game_player.dash? : "No"
     plr_sprite = $game_player.character_name != "" ? $game_player.character_name : "None"
     active_face = ($game_temp.message_face && $game_temp.message_face != "") ? $game_temp.message_face : "None"
     current_bgm = ($game_system.playing_bgm && $game_system.playing_bgm.name != "") ? $game_system.playing_bgm.name : "None"
@@ -823,39 +977,41 @@ class Debug_Coord_Display
       "Dialogue face: #{active_face}",
       "Engine FPS: #{Graphics.frame_rate} FPS",
       "Current BGM: #{current_bgm}",
-      "Save count: #{$game_system.save_count}",
-      # "PC user: #{pc_user}" soon
+      "Save count: #{$game_system.save_count}"
     ]
     
     lines.each_with_index do |line, i|
-      @text.bitmap.draw_text(0, i * 24, 400, 32, line)
+      @text.bitmap.draw_text(0, i * 22, 400, 30, line)
     end
   end
   
   def dispose
     @text.dispose unless @text.disposed?
     @idr_text.dispose unless @idr_text.disposed?
+    @tile_overlay.dispose if @tile_overlay && !@tile_overlay.disposed?
+    @legend.dispose if @legend && !@legend.disposed?
     @viewport.dispose unless @viewport.disposed?
   end
 end
 
-# inject thyself to window title
-begin
-  # w32
-  find_window = Win32API.new('user32', 'FindWindow', 'pp', 'l')
-  set_text    = Win32API.new('user32', 'SetWindowText', 'lp', 'i')
+# # inject thyself to window title
+# begin
+#   # w32
+#   find_window = Win32API.new('user32', 'FindWindow', 'pp', 'l')
+#   set_text    = Win32API.new('user32', 'SetWindowText', 'lp', 'i')
 
-  # find.
-  hwnd = find_window.call('RGSS Player', nil) #possibly..
-  hwnd = find_window.call(nil, 'OneShot') if hwnd == 0
+#   # find.
+#   hwnd = find_window.call('RGSS Player', nil) #possibly..
+#   hwnd = find_window.call(nil, 'OneShot') if hwnd == 0
   
-  # if found, rename!!
-  if hwnd != 0
-    set_text.call(hwnd, "OneShot [Injected w/ CalamusInjector]")
-  end
-rescue Exception => e
-  # fail silently :(
-end
+#   # if found, rename!!
+#   if hwnd != 0
+#     set_text.call(hwnd, "OneShot [Injected w/ CalamusInjector]")
+#   end
+# rescue Exception => e
+#   # fail silently :(
+# end
+# Deprecated ^^^^^^^^^^^
 
 # probably wont work because i dont know how the fuck oneshot titles it windows i tried to find it but to no avail
-# Celebrating 857 lines of code!
+# Celebrating 1005 lines of code!
