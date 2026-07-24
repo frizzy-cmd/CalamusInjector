@@ -1,4 +1,5 @@
 # 110 - Calamus_Injector.rb
+# Dictionary: Item ID = ITID
 # ==============================================================================
 #      ++++++++++++++++++++++++ CalamusInjector ++++++++++++++++++++++++++++++
 #
@@ -46,17 +47,8 @@
 # START!
 
 # TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
-# TO INSTALL THIS MOD, PLEASE REVIEW THE GITHUB REPO INSTEAD!! github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector github.com/frizzy-cmd/CalamusInjector
+
+
 
 # ++== NOTES TO SELF SECTION: [DO NOT MIND IF YOU ARE NOT ME] ==++
 
@@ -872,10 +864,17 @@ def toggle_noclip
   $game_temp.message_window_showing = true
 end
 
-# DIAGNOSTICS
+# ++++ DIAGNOSTICS ++++
+
 class Debug_Coord_Display
+  # cache color objects ONCE so we don't spam GC :3
+  COLOR_GREEN  = Color.new(0, 255, 0, 45)
+  COLOR_RED    = Color.new(255, 0, 0, 75)
+  COLOR_BLUE   = Color.new(0, 180, 255, 110)
+  COLOR_YELLOW = Color.new(255, 230, 0, 130)
+
   def initialize(mode = 1)
-    @mode = mode # 1 = normal, 2 = ext 
+    @mode = mode # 1 = standard text, 2 = extended visual grid
     @viewport = Viewport.new(0, 0, 640, 480)
     @viewport.z = 99999
     
@@ -891,15 +890,14 @@ class Debug_Coord_Display
     @idr_text.bitmap.font.size = 16
     @idr_text.bitmap.font.bold = false
     
-    label_suffix = (@mode == 2) ? "Extended" : "Standard"
+    label_suffix = (@mode == 2) ? "Extended Visuals" : "Standard"
     @idr_text.bitmap.draw_text(0, 0, 600, 32, "CalamusInjector v0.5-GA | Diagnostics [#{label_suffix}]")
 
     if @mode == 2
-      # tile grid overlay
       @tile_overlay = Sprite.new(@viewport)
       @tile_overlay.bitmap = Bitmap.new(640, 480)
 
-      # legend footer
+      # footer legend
       @legend = Sprite.new(@viewport)
       @legend.bitmap = Bitmap.new(220, 100)
       @legend.x = 640 - 220 - 10
@@ -912,55 +910,86 @@ class Debug_Coord_Display
       @legend.bitmap.draw_text(0, 32, 220, 16, "BLUE: INTERACTABLE/NPC")
       @legend.bitmap.draw_text(0, 48, 220, 16, "GREEN: PASSABLE")
       @legend.bitmap.draw_text(0, 64, 220, 16, "RED: NOT PASSABLE")
+      
+      @last_px = nil
+      @last_py = nil
+      @last_disp_x = nil
+      @last_disp_y = nil
+      
+      # preallocate hash to prevent alot of $game_map.passable?
+      @pass_cache = {}
+      @cached_map_id = nil
     end
   end
 
   def update
     return if @text.disposed?
-    @text.bitmap.clear
     
-    if @mode == 2 && @tile_overlay && !@tile_overlay.disposed?
-      @tile_overlay.bitmap.clear
-      
-      #pass grid calc
-      center_x = $game_player.x
-      center_y = $game_player.y
-      
-      (-10..10).each do |dx|
-        (-8..8).each do |dy|
-          map_x = center_x + dx
-          map_y = center_y + dy
-          
-          next if map_x < 0 || map_y < 0 || map_x >= $game_map.width || map_y >= $game_map.height
-          
-          screen_x = (map_x * 32) - $game_map.display_x / 4
-          screen_y = (map_y * 32) - $game_map.display_y / 4
-          
-          next if screen_x < -32 || screen_x > 640 || screen_y < -32 || screen_y > 480
-          
-          passable = $game_map.passable?(map_x, map_y, 0)
-          color = passable ? Color.new(0, 255, 0, 45) : Color.new(255, 0, 0, 75)
-          
-          @tile_overlay.bitmap.fill_rect(screen_x, screen_y, 32, 32, color)
-        end
+      cur_px = $game_player.x
+      cur_py = $game_player.y
+      disp_x = $game_map.display_x / 4
+      disp_y = $game_map.display_y / 4
+
+      # reset cache if map reload
+      if @cached_map_id != $game_map.map_id
+        @pass_cache.clear
+        @cached_map_id = $game_map.map_id
       end
 
-      # active map events (cyan/blue)
-      $game_map.events.values.each do |event|
-        ev_screen_x = (event.x * 32) - $game_map.display_x / 4
-        ev_screen_y = (event.y * 32) - $game_map.display_y / 4
-        next if ev_screen_x < -32 || ev_screen_x > 640 || ev_screen_y < -32 || ev_screen_y > 480
+      # if niko and cam did not move, DO NOT REDRAW CANVAS.
+      if cur_px != @last_px || cur_py != @last_py || disp_x != @last_disp_x || disp_y != @last_disp_y
+        @last_px = cur_px
+        @last_py = cur_py
+        @last_disp_x = disp_x
+        @last_disp_y = disp_y
         
-        @tile_overlay.bitmap.fill_rect(ev_screen_x, ev_screen_y, 32, 32, Color.new(0, 180, 255, 110))
-      end
+        @tile_overlay.bitmap.clear
+        
+        start_x = [disp_x / 32 - 1, 0].max
+        end_x   = [(disp_x + 640) / 32 + 1, $game_map.width - 1].min
+        start_y = [disp_y / 32 - 1, 0].max
+        end_y   = [(disp_y + 480) / 32 + 1, $game_map.height - 1].min
 
-      # player hitbox highlight (yellow)
-      plr_screen_x = (center_x * 32) - $game_map.display_x / 4
-      plr_screen_y = (center_y * 32) - $game_map.display_y / 4
-      @tile_overlay.bitmap.fill_rect(plr_screen_x, plr_screen_y, 32, 32, Color.new(255, 230, 0, 130))
+        # passability grid calc (USING MEM CACHE TO BYE LAG)
+        (start_x..end_x).each do |map_x|
+          (start_y..end_y).each do |map_y|
+            key = (map_x << 16) | map_y
+            
+            # lookup cache or fetch ONCE
+            passable = @pass_cache[key]
+            if passable.nil?
+              passable = $game_map.passable?(map_x, map_y, 0)
+              @pass_cache[key] = passable
+            end
+            
+            screen_x = (map_x * 32) - disp_x
+            screen_y = (map_y * 32) - disp_y
+            
+            color = passable ? COLOR_GREEN : COLOR_RED
+            @tile_overlay.bitmap.fill_rect(screen_x, screen_y, 32, 32, color)
+          end
+        end
+
+        # more optimization!
+        $game_map.events.each_value do |event|
+          next if event.nil? || event.instance_variable_get(:@erased)
+          next if event.x < start_x || event.x > end_x || event.y < start_y || event.y > end_y
+          
+          ev_screen_x = (event.x * 32) - disp_x
+          ev_screen_y = (event.y * 32) - disp_y
+          
+          @tile_overlay.bitmap.fill_rect(ev_screen_x, ev_screen_y, 32, 32, COLOR_BLUE)
+        end
+
+        # plr hitbox
+        plr_screen_x = (cur_px * 32) - disp_x
+        plr_screen_y = (cur_py * 32) - disp_y
+        @tile_overlay.bitmap.fill_rect(plr_screen_x, plr_screen_y, 32, 32, COLOR_YELLOW)
+      end
     end
 
-    # standard shit
+    # standard diag
+    @text.bitmap.clear
     can_dash = $game_player.respond_to?(:dash?) ? $game_player.dash? : "No"
     plr_sprite = $game_player.character_name != "" ? $game_player.character_name : "None"
     active_face = ($game_temp.message_face && $game_temp.message_face != "") ? $game_temp.message_face : "None"
@@ -994,24 +1023,23 @@ class Debug_Coord_Display
   end
 end
 
-# # inject thyself to window title
-# begin
-#   # w32
-#   find_window = Win32API.new('user32', 'FindWindow', 'pp', 'l')
-#   set_text    = Win32API.new('user32', 'SetWindowText', 'lp', 'i')
+# inject thyself to window title
+begin
+  # w32
+  find_window = Win32API.new('user32', 'FindWindow', 'pp', 'l')
+  set_text    = Win32API.new('user32', 'SetWindowText', 'lp', 'i')
 
-#   # find.
-#   hwnd = find_window.call('RGSS Player', nil) #possibly..
-#   hwnd = find_window.call(nil, 'OneShot') if hwnd == 0
+  # find.
+  hwnd = find_window.call('RGSS Player', nil) #possibly..
+  hwnd = find_window.call(nil, 'OneShot') if hwnd == 0
   
-#   # if found, rename!!
-#   if hwnd != 0
-#     set_text.call(hwnd, "OneShot [Injected w/ CalamusInjector]")
-#   end
-# rescue Exception => e
-#   # fail silently :(
-# end
-# Deprecated ^^^^^^^^^^^
+  # if found, rename!!
+  if hwnd != 0
+    set_text.call(hwnd, "OneShot [Injected w/ CalamusInjector]")
+  end
+rescue Exception => e
+  # fail silently :(
+end
 
 # probably wont work because i dont know how the fuck oneshot titles it windows i tried to find it but to no avail
-# Celebrating 1005 lines of code!
+# Celebrating 1041 lines of code!
